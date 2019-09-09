@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="icon" href="<%= BASE_URL %>favicon.ico">
+    <title>playground</title>
+  </head>
+  <body>
+    <noscript>
+      <strong>We're sorry but playground doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+    </noscript>
+    <div id="app"></div>
+    <!-- built files will be auto injected -->
+  </body>
+
+<script type='x-shader/x-vertex' id='vertex-shader'>
+    /**
+    * The vertex shader's main() function must define `gl_Position`,
+    * which describes the position of each vertex in the space.
+    *
+    * To do so, we can use the following variables defined by Three.js:        
+    *   
+    *   uniform mat4 modelViewMatrix - combines:
+    *     model matrix: maps a point's local coordinate space into world space
+    *     view matrix: maps world space into camera space
+    *
+    *   uniform mat4 projectionMatrix - maps camera space into screen space
+    *
+    *   attribute vec3 position - sets the position of each vertex
+    *
+    *   attribute vec2 uv - determines the relationship between vertices and textures
+    *
+    * `uniforms` are constant across all vertices
+    *
+    * `attributes` can vary from vertex to vertex and are defined as arrays
+    * with length equal to the number of vertices. Each index in the array
+    * is an attribute for the corresponding vertex
+    *
+    * `varyings` are values passed from the vertex to the fragment shader
+    **/
+
+    varying vec2 vUv; // pass the uv coordinates of each pixel to the frag shader
+
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  </script>
+
+<script type='x-shader/x-fragment' id='fragment-shader'>
+    /**
+    * The fragment shader's main() function must define `gl_FragColor`,
+    * which describes the pixel color of each pixel on the screen.
+    *
+    * To do so, we can use uniforms passed into the shader and varyings
+    * passed from the vertex shader
+    **/
+
+    precision highp float; // set float precision (optional)
+
+    uniform sampler2D texture; // identify the texture as a uniform argument
+    varying vec2 vUv; // identify the uv values as a varying attribute
+
+    void main() {
+      gl_FragColor = texture2D(texture, vUv);
+    }
+  </script>
+
+</html>
