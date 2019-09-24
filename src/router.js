@@ -17,6 +17,11 @@ export default new Router({
       path: '/particles',
       name: 'particles',
       component: () => import(/* webpackChunkName: "about" */ './views/Particles.vue')
-    }
+    },
+    // {
+    //   path: '/particles-detail',
+    //   name: 'particles-detail',
+    //   component: () => import(/* webpackChunkName: "about" */ './views/Particles-detail.vue')
+    // }
   ]
 })
