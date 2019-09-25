@@ -14,9 +14,10 @@ export default class FullscreenEffect {
             uMeshScale: new THREE.Uniform(new THREE.Vector2(1, 1)),
             uMeshPosition: new THREE.Uniform(new THREE.Vector2(0, 0)),
             uViewSize: new THREE.Uniform(new THREE.Vector2(1, 1)),
-            uColor: new THREE.Uniform(new THREE.Vector3(20, 20, 20))
+            uColor: new THREE.Uniform(new THREE.Vector3(20, 20, 20)),
+            uTexture: new THREE.Uniform(new THREE.Vector2(1, 1)),
         };
-        this.animating = false;
+        this.isAnimating = false;
         this.state = "grid";
 
         this.init();
@@ -52,7 +53,7 @@ export default class FullscreenEffect {
             uniforms: this.uniforms,
             vertexShader: vertexShader,
             fragmentShader: fragmentShader,
-            side: THREE.DoubleSide
+            // side: THREE.DoubleSide
         });
         this.mesh = new THREE.Mesh(geometry, material);
         this.scene.add(this.mesh);
@@ -71,19 +72,29 @@ export default class FullscreenEffect {
             const element = this.items[i];
             element.addEventListener("mousedown", ev => this.clickOnImage(ev, i));
         }
-
-        document.getElementById('range').addEventListener('change', (e) => {
-            this.uniforms.uProgress.value = e.target.value / 100;
-            console.log(e.target.value);
-            this.render();
-        })
     }
 
-    clickOnImage(ev, itemIndex){
+    async clickOnImage(ev, itemIndex){
         this.itemIndex = itemIndex;
+        // console.log(this.uniforms.uTexture)
+        this.uniforms.uTexture.type = 't';
+        this.uniforms.uTexture.value = await this.loadTexture(this.items[itemIndex].querySelector('img').getAttribute('data-large'));
+
+        // console.log(ev);
         this.updateMesh(ev)
         
-        this.toFullscreen();
+        this.toggleFullscreen(true);
+    }
+
+    loadTexture(src){
+        const loader = new THREE.TextureLoader();
+
+        return new Promise((resolve,reject) => {
+            loader.load(src, (tex) => {
+                resolve(tex);
+            }, null, (e) => reject(e));
+        })
+        
     }
 
     updateMesh(){
@@ -131,24 +142,28 @@ export default class FullscreenEffect {
     }
     
 
-    toFullscreen() {
-        if (this.state === 'fullscreen' || this.isAnimating) return;
-        console.log('goFullscreen')
-        this.animating = true;
+    toggleFullscreen(fullscreen) {
+        if (this.isAnimating) return;
+        this.isAnimating = true;
         this.container.style.zIndex = "2";
-        // this.uniforms.uProgress.value = 0.4;
+
+        // if(!fullscreen)
         this.render();
         this.tween = TweenMax.to(
-            this.uniforms.uProgress, .1,
+            this.uniforms.uProgress, 2,
             {
-                value: 1,
+                value: fullscreen ? 1 : 0,
                 onUpdate: this.render.bind(this),
                 onComplete: () => {
                     this.isAnimating = false;
-                    this.state = "fullscreen";
+ 
                 }
             }
         );
+    }
+
+    toggleOff(){
+        this.toggleFullscreen(false);
     }
 
     getViewSize() {
@@ -165,32 +180,41 @@ export default class FullscreenEffect {
 
 
 const vertexShader = `
+    varying vec2 vUv;
 	uniform float uProgress;
 	uniform vec2 uMeshScale;
 	uniform vec2 uMeshPosition;
 	uniform vec2 uViewSize;
 
 	void main(){
+        vUv = uv;
 	    vec3 pos = position.xyz;
+        
+        // Activation for left-to-right
+		float activation = uv.y;
 		
+		float latestStart = 0.5;
+		float startAt = activation * latestStart;
+		float vertexProgress = smoothstep(startAt,1.,uProgress);
+
 		// Scale to page view size/page size
 	    vec2 scaleToViewSize = uViewSize / uMeshScale - 1.;
         vec2 scale = vec2(
-          1. + scaleToViewSize * uProgress
+          1. + scaleToViewSize * vertexProgress
         );
         pos.xy *= scale;
         
         // Move towards center 
-        pos.y += -uMeshPosition.y * uProgress;
-        pos.x += -uMeshPosition.x * uProgress;
+        pos.y += -uMeshPosition.y * vertexProgress;
+        pos.x += -uMeshPosition.x * vertexProgress;
         
          gl_Position = projectionMatrix * modelViewMatrix * vec4(pos,1.);
 	}
 `;
 const fragmentShader = `
-uniform vec3 uColor;
+varying vec2 vUv;
+uniform sampler2D uTexture;
 	void main(){
-    vec3 color = uColor;
-         gl_FragColor = vec4(color/255.,1.);
+         gl_FragColor = texture2D(uTexture, vUv);;
 	}
 `;

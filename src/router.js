@@ -14,9 +14,9 @@ export default new Router({
       component: Home
     },
     {
-      path: '/particles',
-      name: 'particles',
-      component: () => import(/* webpackChunkName: "about" */ './views/Particles.vue')
+      path: '/playground',
+      name: 'playground',
+      component: () => import(/* webpackChunkName: "about" */ './views/Playground.vue')
     },
     // {
     //   path: '/particles-detail',
