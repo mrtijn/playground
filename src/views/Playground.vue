@@ -1,23 +1,14 @@
 <template>
   <div class="about-page">
-    <div class="about">
-      <h1>This is an particle page</h1>
+    <h1>Image effect</h1>
+    <div class="tiles">
+      <div class="tile">
+        <figure>
+          <img src="test.jpg" data-hover="motor.jpg" alt="">
+        </figure>
+      </div>
     </div>
-    <ul ref="images">
-      <li>
-        <img src="https://picsum.photos/id/10/500/500" data-large="https://picsum.photos/id/10/1920/1080" alt="">
-      </li>
-      <li>
-        <img src="https://picsum.photos/id/11/500/500" data-large="https://picsum.photos/id/11/1920/1080" alt="">
-      </li>
-      <li>
-        <img src="https://picsum.photos/id/12/500/500" data-large="https://picsum.photos/id/12/1920/1080" alt="">
-      </li>
-        <li>
-        <img src="https://picsum.photos/id/13/500/500" data-large="https://picsum.photos/id/13/1920/1080" alt="">
-      </li>
-    </ul>
-    <div id="scene" ref="particleScene"></div>
+    <canvas id="scene" ref="scene"></canvas>
    
   </div>
 </template>
@@ -34,51 +25,34 @@
         grid-column-gap: 25px;
         grid-row-gap: 25px;
     }
-    #scene {
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: -1;
-    }
 
-    #range {
-      position: relative;
-      z-index: 99;
-    }
-
-    ul {
-      li {
-        display: inline-block;
-        img {
-          max-width: 300px;
-        }
-        &:nth-child(1) {
-          background-color: coral;
-        }
-        &:nth-child(2) {
-          background-color: lightblue;
-        }
-        &:nth-child(3) {
-          background-color: lightgreen;
-        }
-        &:nth-child(4) {
-          background-color: lightpink;
-        }
+    .tiles {
+      img{
+        width: 603px;
+        height: 400px;
       }
     }
+    #scene {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100vh;
+      z-index: 9;
+    }
+
   }
 
 </style>
 
 <script>
-import fullScreenEffect from '@/playground/fullscreen';
+import imageFx from '../playground/imageEffect';
 export default {
   mounted(){
-      const items = this.$refs.images.children;
-      new fullScreenEffect(
-          document.getElementById("scene"),
-          items
-      );
+    const el = this.$refs.scene;
+    new imageFx(
+      el
+    );
   }
 }
 </script>
